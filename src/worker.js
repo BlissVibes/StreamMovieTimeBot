@@ -2,7 +2,7 @@ import {
   ACTION_KEYS, MOD_ACTIONS, TIMER_ACTIONS, renderMessage, timeMessageKey, effectiveMovie, clip,
 } from '../public/core.js';
 import { searchMovies, movieDetails, isStale } from './tmdb.js';
-import { login, callback, logout, readSession, devLogin } from './auth.js';
+import { login, callback, logout, readSession, devLogin, switchAccount } from './auth.js';
 
 export { Channel } from './channel.js';
 
@@ -30,9 +30,9 @@ export default {
         if (r.user) await channel(env, r.user.id).setProfile({ login: r.user.login, displayName: r.user.name });
         return r.response;
       }
-      if (p === '/auth/logout' && req.method === 'POST') {
+      if ((p === '/auth/logout' || p === '/auth/switch') && req.method === 'POST') {
         if (!sameOrigin(req, url)) return json({ error: 'Bad origin' }, 403);
-        return logout();
+        return p === '/auth/logout' ? logout(req, env) : switchAccount(req, env);
       }
       if (p.startsWith('/api/')) return await api(req, env, ctx, url);
       return env.ASSETS.fetch(req);
