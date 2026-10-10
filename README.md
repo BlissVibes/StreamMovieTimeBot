@@ -35,13 +35,13 @@ The design is in [`PLAN.md`](PLAN.md).
 1. Sign up at <https://dash.cloudflare.com/sign-up>. The free plan is enough.
 2. **Workers & Pages** → open it once so Cloudflare asks you to choose your
    `workers.dev` subdomain (for example `markw`). The app will live at
-   `https://streammovietimebot.<subdomain>.workers.dev`.
+   `https://movietimer.<subdomain>.workers.dev`.
 
 ### 2. Twitch app
 
 1. <https://dev.twitch.tv/console/apps> → **Register Your Application**.
 2. Name: anything (for example *Movie Clock*). Category: *Chat Bot* or *Website Integration*.
-3. OAuth Redirect URL: `https://streammovietimebot.<subdomain>.workers.dev/auth/callback`
+3. OAuth Redirect URL: `https://movietimer.<subdomain>.workers.dev/auth/callback`
 4. Client type: **Confidential**.
 5. Copy the **Client ID**, then **New Secret** → copy the **Client Secret**.
 
