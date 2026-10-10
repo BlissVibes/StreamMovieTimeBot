@@ -1,4 +1,5 @@
 import * as core from '/core.js';
+import { SAMPLES } from '/demo-movies.js';
 
 // ================================================================ helpers
 
@@ -568,6 +569,39 @@ function setupSortable() {
 // --- live chat preview
 
 const ARGS = { settime: ' 1:05:00', setmovie: ' the matrix' };
+let previewSample = 0;      // which sample movie previews use until one is picked
+let previewNoteFor = null;  // what the note currently describes, to avoid rebuilding the picker every tick
+
+function renderPreviewNote() {
+  const key = S.state.movie ? 'movie' : 'sample';
+  if (previewNoteFor === key) return;
+  previewNoteFor = key;
+  const note = $('#previewNote');
+  if (S.state.movie) { note.replaceChildren('Clock is simulated for this message'); return; }
+  note.replaceChildren('Preview with ',
+    h('select', { class: 'sample-pick', 'aria-label': 'Sample movie for the preview',
+      onchange: e => { previewSample = Number(e.target.value); renderPreview(); } },
+      SAMPLES.map((m, i) => h('option', { value: String(i), selected: i === previewSample }, m.title))),
+    ' until you pick a movie');
+}
+
+const PREVIEW_AT = 62 * 60e3 + 3e3;   // 1:02:03 into the movie
+const previewStart = Date.now();
+
+// The clock each message is shown with, so every field has something to
+// show: a paused message previews a paused clock, and so on. It ticks.
+function previewTimer(key, movie, t) {
+  const rt = core.runtimeMs(movie);
+  const at = rt ? Math.min(PREVIEW_AT, rt / 2) : PREVIEW_AT;
+  const ticking = at + (Date.now() - previewStart);
+  if (key === 'not-started' || key === 'reset') return { status: 'idle', base: 0, frozen: 0 };
+  if (key === 'time-paused' || key === 'pause' || key === 'not-running') return { status: 'paused', base: 0, frozen: at };
+  if (key === 'stop') return { status: 'stopped', base: 0, frozen: at };
+  if (key === 'time-ended' || key === 'end') return { status: 'ended', base: 0, frozen: rt || at };
+  if (key === 'restart') return { status: 'running', base: t - (Date.now() - previewStart) % 60e3, frozen: 0 };
+  if (key === 'settime') return { status: 'running', base: t - 65 * 60e3, frozen: 0 };
+  return { status: 'running', base: t - ticking, frozen: 0 };
+}
 
 function renderPreview() {
   if (!S.state || $('[data-panel="messages"]').hidden) return;
@@ -576,8 +610,16 @@ function renderPreview() {
   const viewer = isMod ? 'ModMax' : 'popcorn_pal';
   const cmdKey = core.commandForMessage(msgKey);
   const typed = `${settings().commands[cmdKey]}${ARGS[cmdKey] || ''}`;
-  const previewState = { ...S.state, settings: { ...settings(), templates: { ...settings().templates, [msgKey]: draft } } };
-  const reply = core.renderMessage(previewState, msgKey, now(), { user: viewer });
+  const t = now();
+  const movie = S.state.movie || { ...SAMPLES[previewSample], fetchedAt: t };
+  const previewState = {
+    ...S.state,
+    movie,
+    timer: previewTimer(msgKey, movie, t),
+    settings: { ...settings(), templates: { ...settings().templates, [msgKey]: draft } },
+  };
+  const reply = core.renderMessage(previewState, msgKey, t, { user: viewer });
+  renderPreviewNote();
   $('#chatPreview').replaceChildren(
     h('div', { class: 'chat-line' },
       isMod ? h('span', { class: 'chat-badge mod', title: 'Moderator' }, '⚔') : null,
@@ -644,7 +686,6 @@ async function boot() {
     $('#loginError').hidden = false;
   }
   if (DEMO) {
-    const { SAMPLES } = await import('/demo-movies.js');
     api = makeDemoApi(SAMPLES);
     $('#demoBadge').hidden = false;
   }

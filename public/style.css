@@ -157,7 +157,7 @@ input[type=checkbox], input[type=radio] { width: auto; min-height: 0; accent-col
 .emoji-grid button:hover { border-color: var(--line); }
 
 /* Twitch-style chat preview */
-.chat { margin-top: 18px; background: #0e0e10; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.chat { margin-top: 8px; background: #0e0e10; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .chat-head { background: #18181b; padding: 8px 12px; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .chat-body { padding: 10px 12px; font-size: 13px; line-height: 20px; }
 .chat-line { padding: 3px 0; overflow-wrap: anywhere; }
@@ -165,7 +165,9 @@ input[type=checkbox], input[type=radio] { width: auto; min-height: 0; accent-col
 .chat-badge { display: inline-block; width: 18px; height: 18px; border-radius: 3px; vertical-align: -4px; margin-right: 3px; text-align: center; font-size: 12px; line-height: 18px; color: #fff; }
 .chat-badge.mod { background: #00ad03; }
 .chat-badge.bot { background: #3a3a3d; }
-.chat-count { padding: 0 12px 8px; text-align: right; font-size: .78rem; color: var(--muted); }
+.chat-foot { display: flex; justify-content: space-between; gap: 8px; padding: 0 12px 8px; }
+.chat-foot .fine { font-size: .75rem; }
+.chat-count { font-size: .78rem; color: var(--muted); white-space: nowrap; }
 .chat-count.over { color: var(--warn); }
 
 /* Commands */
@@ -213,3 +215,4 @@ input[type=checkbox], input[type=radio] { width: auto; min-height: 0; accent-col
   font: inherit; padding: 9px 10px; border-radius: 6px; cursor: pointer; text-decoration: none;
 }
 .acct-item:hover { background: var(--panel-2); }
+.sample-pick { width: auto; min-height: 0; padding: 1px 4px; font-size: .75rem; display: inline-block; }
