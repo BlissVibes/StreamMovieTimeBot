@@ -1,5 +1,6 @@
 import * as core from '/core.js';
 import { SAMPLES } from '/demo-movies.js';
+import { VERSION } from '/version.js';
 
 // ================================================================ helpers
 
@@ -680,6 +681,7 @@ function renderPaste() {
 // ================================================================ boot
 
 async function boot() {
+  $('#version').textContent = `v${VERSION}`;
   const q = new URLSearchParams(location.search);
   if (q.get('login_error')) {
     $('#loginError').textContent = q.get('login_error');
