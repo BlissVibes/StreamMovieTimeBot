@@ -299,7 +299,7 @@ export function fieldValues(state, now, chat = {}) {
     imdb: m.imdbUrl || (/^tt\d+$/.test(imdbId) ? `https://www.imdb.com/title/${imdbId}/` : ''),
     tmdb: m.tmdbId ? `https://www.themoviedb.org/movie/${m.tmdbId}` : '',
     elapsed: formatDuration(v.elapsed, style),
-    remaining: v.remaining == null ? '' : formatDuration(v.remaining, style),
+    remaining: v.remaining == null ? '' : formatDuration(Math.ceil(v.remaining / 1000) * 1000, style),
     percent: v.percent == null ? '' : `${v.percent}%`,
     bar: v.percent == null ? '' : progressBar(v.percent),
     status: STATUS_WORDS[v.status] || v.status,
