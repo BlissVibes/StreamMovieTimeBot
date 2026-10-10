@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Movie Clock</title>
+  <meta name="description" content="A movie timer for Twitch chat, run through Fossabot.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js" defer></script>
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">🎬 Movie Clock</a>
+    <span class="demo-badge" id="demoBadge" hidden>Demo</span>
+    <div class="who" id="who"></div>
+  </header>
+
+  <main id="app">
+    <section class="login" id="login" hidden>
+      <h1>A movie timer for your Twitch chat</h1>
+      <p>Paste a few Fossabot commands, pick a movie, and chat can ask <code>!movietime</code> whenever it likes. Edit every reply here.</p>
+      <p class="login-error" id="loginError" hidden></p>
+      <div class="login-actions">
+        <a class="btn btn-twitch" href="/auth/login">Log in with Twitch</a>
+        <a class="btn" href="/?demo">Try the demo</a>
+      </div>
+      <p class="fine">Login asks Twitch for your public profile only: no email, chat, or stream access. The Twitch token is thrown away as soon as your name is read.</p>
+    </section>
+
+    <div id="dash" hidden>
+      <nav class="tabs" id="tabs">
+        <button data-tab="now" class="on">Now playing</button>
+        <button data-tab="movie">Movie</button>
+        <button data-tab="messages">Messages</button>
+        <button data-tab="commands">Commands</button>
+      </nav>
+
+      <!-- Now playing -->
+      <section class="panel" data-panel="now">
+        <div class="now">
+          <img class="poster" id="nowPoster" alt="">
+          <div class="now-info">
+            <div class="now-title" id="nowTitle"></div>
+            <div class="clock" id="clock">0:00</div>
+            <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+            <div class="clock-sub"><span id="clockStatus"></span><span id="clockRemain"></span></div>
+          </div>
+        </div>
+        <div class="controls" id="controls">
+          <button data-act="start" class="btn btn-go">▶ Start</button>
+          <button data-act="pause" class="btn">⏸ Pause</button>
+          <button data-act="resume" class="btn">⏵ Resume</button>
+          <button data-act="restart" class="btn">↻ Restart</button>
+          <button data-act="reset" class="btn">↩ Reset</button>
+          <button data-act="end" class="btn">🏁 End</button>
+        </div>
+        <form class="settime" id="setTimeForm">
+          <input id="setTimeInput" placeholder="1:05:00, 90m, +5m, -30s" autocomplete="off" aria-label="Set time">
+          <button class="btn">Set time</button>
+        </form>
+        <p class="last-reply" id="lastReply" hidden></p>
+      </section>
+
+      <!-- Movie -->
+      <section class="panel" data-panel="movie" hidden>
+        <div class="current-movie" id="currentMovie"></div>
+        <div class="seg">
+          <button class="on" data-mode="search">Search TMDB</button>
+          <button data-mode="custom">Custom movie</button>
+          <button data-mode="edit" id="editModeBtn">Edit details</button>
+        </div>
+        <div data-mode-panel="search">
+          <input id="search" type="search" placeholder="Search movies, e.g. the matrix 1999" autocomplete="off">
+          <ul class="results" id="results"></ul>
+        </div>
+        <form class="movie-form" data-mode-panel="custom" id="customForm" hidden></form>
+        <form class="movie-form" data-mode-panel="edit" id="editForm" hidden></form>
+      </section>
+
+      <!-- Messages -->
+      <section class="panel" data-panel="messages" hidden>
+        <label class="field-label" for="msgSelect">Message</label>
+        <select id="msgSelect"></select>
+
+        <div class="editor-head">
+          <span class="field-label">Reply</span>
+          <span class="save-state" id="saveState"></span>
+          <button class="btn btn-small" id="resetMsg">Reset to default</button>
+        </div>
+        <div class="template" id="template"></div>
+        <div class="trash" id="trash">Drop here to delete</div>
+
+        <div class="palette" id="palette"></div>
+
+        <details class="emoji" open>
+          <summary>Emoji</summary>
+          <div class="emoji-grid" id="emojiGrid"></div>
+          <p class="fine">Tap while editing a text block to type it in; otherwise it's added as its own block. Drag works too.</p>
+        </details>
+
+        <div class="chat" aria-label="Chat preview">
+          <div class="chat-head">Stream chat · preview</div>
+          <div class="chat-body" id="chatPreview"></div>
+          <div class="chat-count" id="chatCount"></div>
+        </div>
+      </section>
+
+      <!-- Commands -->
+      <section class="panel" data-panel="commands" hidden>
+        <h2>Commands</h2>
+        <p class="fine">Rename any command. Untick one to leave it out of the paste block.</p>
+        <div class="cmd-table" id="cmdTable"></div>
+        <p class="form-error" id="cmdError" hidden></p>
+
+        <h2>Options</h2>
+        <div class="opts">
+          <label><input type="radio" name="timeStyle" value="clock"> Clock style <code>1:23:45</code></label>
+          <label><input type="radio" name="timeStyle" value="words"> Word style <code>1h 23m</code></label>
+          <label><input type="checkbox" id="autoEnd"> End automatically when the runtime is reached</label>
+        </div>
+
+        <h2>Paste into your chat</h2>
+        <p class="fine">Type these in your own Twitch chat (Fossabot needs to be a mod). Each line adds one command.</p>
+        <div class="paste" id="paste"></div>
+        <button class="btn" id="copyAll">Copy all</button>
+        <details class="fine">
+          <summary>If <code>!addcmd</code> doesn't work</summary>
+          <p>Add each command in the Fossabot dashboard instead (Commands → Add command): use the command name on the left and the <code>$(customapi …)</code> part as the response. Set the mod commands to "Moderator" permission there too. Movie Clock also checks mod status itself, so a wrong setting can't let viewers run them.</p>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <img src="/tmdb-logo.svg" alt="TMDB" class="tmdb-logo">
+    <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    <p>Login is Twitch public profile only. To revoke it: Twitch → Settings → Connections.</p>
+  </footer>
+  <div class="toast" id="toast" hidden></div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "movie-clock",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // Static files are served for free without waking the Worker; only
+    // these paths run code.
+    "run_worker_first": ["/f/*", "/auth/*", "/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "CHANNEL", "class_name": "Channel" }]
+  },
+  "migrations": [
+    // SQLite-backed Durable Objects are the ones the free plan allows.
+    { "tag": "v1", "new_sqlite_classes": ["Channel"] }
+  ],
+  "observability": { "enabled": true }
+  // Secrets (wrangler secret put): TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET,
+  // SESSION_SECRET, TMDB_TOKEN. Optional var PUBLIC_URL pins the address
+  // used in the paste block and the Twitch redirect.
+}
