@@ -216,3 +216,17 @@ input[type=checkbox], input[type=radio] { width: auto; min-height: 0; accent-col
 }
 .acct-item:hover { background: var(--panel-2); }
 .sample-pick { width: auto; min-height: 0; padding: 1px 4px; font-size: .75rem; display: inline-block; }
+
+/* Version badge and changelog */
+.version {
+  font-size: .75rem; font-weight: 600; color: var(--muted); text-decoration: none;
+  border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; font-variant-numeric: tabular-nums;
+}
+.version:hover { color: var(--text); border-color: var(--accent); }
+.changelog-title { font-size: 1.5rem; margin: 8px 0 4px; }
+.release { border-top: 1px solid var(--line); padding: 16px 0 8px; }
+.release-head { font-size: 1.15rem; margin: 0; }
+.release-version { color: #bf94ff; }
+.release-section { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 16px 0 6px; }
+.release ul { margin: 0; padding-left: 20px; }
+.release li { margin: 4px 0; }
